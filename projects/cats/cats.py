@@ -1,5 +1,6 @@
 """Typing test implementation"""
 
+from re import sub
 from utils import lower, split, remove_punctuation, lines_from_file
 from ucb import main, interact, trace
 from datetime import datetime
@@ -161,6 +162,18 @@ def autocorrect(typed_word, valid_words, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    res = typed_word
+    min_diff = limit +1
+    for vw in valid_words:
+        if vw == typed_word:
+            return typed_word
+        diff = diff_function(typed_word,vw,limit)
+        if diff < min_diff:
+            min_diff = diff
+            res = vw
+    if min_diff > limit:
+        return typed_word
+    return res
     # END PROBLEM 5
 
 
@@ -187,7 +200,20 @@ def sphinx_switches(start, goal, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    if limit < 0:
+        return 1
+    if start == "" or goal == "":
+        return abs(len(start) - len(goal))
+
+    res = 0
+    if start[0] == goal[0]:
+        res = sphinx_switches(start[1:],goal[1:],limit)
+    else:
+        res = 1 + sphinx_switches(start[1:],goal[1:],limit - 1)
+    if res > limit:
+        res = limit + 1
+    
+    return res
     # END PROBLEM 6
 
 
@@ -208,25 +234,26 @@ def pawssible_patches(start, goal, limit):
     >>> pawssible_patches("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
 
-    if ______________:  # Fill in the condition
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+    if limit < 0:
+        return 1
+    if start == "" or goal == "":
+        return abs(len(start) - len(goal))
 
-    elif ___________:  # Feel free to remove or add additional cases
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+    next = limit + 1
+    add = limit + 1
+    remove = limit + 1
+    substitute = limit + 1
+
+    if start[0] == goal[0]:
+        next = pawssible_patches(start[1:],goal[1:],limit)
 
     else:
-        add = ...  # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+        add = 1 + pawssible_patches(start,goal[1:],limit - 1)
+        remove = 1 + pawssible_patches(start[1:],goal,limit - 1)
+        substitute = 1 + pawssible_patches(start[1:],goal[1:],limit-1)
+    
+    return min(next,add,remove,substitute)
 
 
 def final_diff(start, goal, limit):
@@ -268,6 +295,22 @@ def report_progress(typed, prompt, user_id, send):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    len_typed = len(typed)
+    len_prompt = len(prompt)
+    correct_typed = 0
+    for i in range(len_typed):
+        if typed[i] == prompt[i]:
+            correct_typed += 1
+        else:
+            break
+    progress = correct_typed / len_prompt
+    data = {
+        'id': user_id,
+        'progress': progress
+    }
+    send(data)
+
+    return progress
     # END PROBLEM 8
 
 
@@ -301,6 +344,9 @@ def time_per_word(times_per_player, words):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    time = [[times_per_player[i][j+1]-times_per_player[i][j] for j in range(len(times_per_player[0])-1)] for i in range(len(times_per_player))]
+    game_ins = game(words,time)
+    return game_ins
     # END PROBLEM 9
 
 
@@ -319,6 +365,27 @@ def fastest_words(game):
     word_indices = range(len(all_words(game)))    # contains an *index* for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    dir = {}
+    for i in word_indices:
+        word = word_at(game,i)
+        min_time = time(game,0,i)  
+        fast_player = 0
+        for j in player_indices:
+            time_ins = time(game,j,i)    #_ins  实例
+            if time_ins < min_time:
+                min_time = time_ins
+                fast_player = j
+        dir[word] = fast_player
+
+    res = []
+    for j in player_indices:
+        res_j = []
+        for item in dir:
+            if dir[item] == j:
+                res_j.append(item)
+        res.append(res_j)
+    return res
+            
     # END PROBLEM 10
 
 
